@@ -3,10 +3,22 @@ import pdfplumber
 import re
 import io
 
-def encode_image(image_path):
+def encode_image(image_input):
     # Utility function to encode the image for delivery to LLM in base64
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
+    try:
+        # Check if it's a file object or file path
+        if hasattr(image_input, 'read'):
+            # It's a file object
+            image_input.seek(0)  # Reset to beginning
+            image_data = image_input.read()
+            return base64.b64encode(image_data).decode('utf-8')
+        else:
+            # It's a file path
+            with open(image_input, "rb") as image_file:
+                return base64.b64encode(image_file.read()).decode('utf-8')
+    except Exception as e:
+        print(f"Error encoding image: {e}")
+        return ""
 
 def extract_text_from_pdf(file):
     """Extract text from PDF file using pdfplumber"""

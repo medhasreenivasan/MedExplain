@@ -2,26 +2,39 @@ import requests
 from src.utils import encode_image
 
 
+URL = None
+HF_TOKEN = None
+
+def configure(url, token):
+    global URL, HF_TOKEN
+    URL = url 
+    HF_TOKEN = token
+
 def get_report_summary(report_text):
   """Generate summary using MEDGEMMA"""
   try:
 
       summarization_prompt = f"""Analyze the medical report and give a very short summarization of the patient details, overall assessment, keyfindings and suggested next steps or recommendations.Return the report summary as points and in markdown format and do not include any extra commentary or sentences.\nMedical Report: {report_text}"""
-      payload = {
-        "user_prompt": summarization_prompt,
-        "system_instruction": "",
-        "image":"",
-        "max_tokens":1000
+      data = {
+        "inputs": {
+            "user_prompt": [summarization_prompt],
+            "system_instruction": [""],
+            "image": [""],
+            "max_tokens": [1000]
         }
+      }
 
       # Send POST request to the MLflow server's /invocations endpoint
       response = requests.post(
-          "http://localhost:5001/invocations",
-          json=payload
+          URL,
+          json=data
       )
-
+      print(response)
+      data = response.json()
+      
+      answer = data.get("predictions","No answer")
       return {
-          "summary": response["answer"],
+          "summary": answer,
       }
 
   except Exception as e:
@@ -48,19 +61,25 @@ def get_sentence_explanation(sentence, report_text):
           f"For context, the full REPORT is:\n{report_text}"
       )
       explanation_prompt = f"Explain this sentence from the medical report: '{sentence_lower}'"
-      payload = {
-        "user_prompt": explanation_prompt,
-        "system_instruction": system_prompt,
-        "image":"",
-        "max_tokens":1000
+
+      data = {
+        "inputs": {
+            "user_prompt": [explanation_prompt],
+            "system_instruction": [system_prompt],
+            "image": [""],
+            "max_tokens": [1000]
         }
+      }
 
       # Send POST request to the MLflow server's /invocations endpoint
       response = requests.post(
-          "http://localhost:5001/invocations",
-          json=payload
+          URL,
+          json=data
       )
-      sentence_explanation = response["answer"]
+      print(response)
+      data = response.json()
+      answer = data.get("predictions","No answer")
+      sentence_explanation = answer
       return sentence_explanation
 
 
@@ -76,25 +95,27 @@ def generate_chatbot_response(message, context, image_data):
 
     message_lower = message.lower()
 
-    if image_data:
-      system_prompt = f"You are a medical chatbot and you are required to answer questions the patient might have about the report or any general questions related to the report. \n Report: {context}. \n Image: {image_data}"
-    else:
-      system_prompt = f"You are a medical chatbot and you are required to answer questions the patient might have about the report or any general questions related to the report. \n Report: {context}"
+    
+    system_prompt = f"You are a medical chatbot and you are required to answer questions the patient might have about the report or any general questions related to the report. \n Report: {context}"
 
-    payload = {
-      "user_prompt": message_lower,
-      "system_instruction": system_prompt,
-      "image":"",
-      "max_tokens":1000
+    data = {
+        "inputs": {
+            "user_prompt": [message_lower],
+            "system_instruction": [system_prompt],
+            "image": [image_data],
+            "max_tokens": [1000]
+        }
       }
 
     # Send POST request to the MLflow server's /invocations endpoint
     response = requests.post(
-        "http://localhost:5001/invocations",
-        json=payload
+        URL,
+        json=data
         )
-
-    return response["answer"]
+    print(response)
+    data = response.json()
+    answer = data.get("predictions","No answer")
+    return answer
 
 def generate_report_from_image(image_file):
     try:
@@ -110,19 +131,24 @@ def generate_report_from_image(image_file):
         <Diagnosis>
         """
 
-        payload = {
-          "user_prompt": prompt,
-          "system_instruction": system_prompt,
-          "image":image,
-          "max_tokens":1000
-          }
+        data = {
+            "inputs": {
+                "user_prompt": [prompt],
+                "system_instruction": ["You are a helpful assistant."],
+                "image": [image],
+                "max_tokens": [1000]
+            }
+        }
 
         # Send POST request to the MLflow server's /invocations endpoint
         response = requests.post(
-            "http://localhost:5001/invocations",
-            json=payload
+            URL,
+            json=data
         )
-
-        return response["answer"]
+        print(response)
+        data = response.json()
+        print(data)
+        answer = data.get("predictions","No answer")
+        return answer
     except Exception as e:
         return f"Error generating report from image: {str(e)}"

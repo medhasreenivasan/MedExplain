@@ -12,7 +12,12 @@ requests==2.31.0
 Werkzeug==3.0.1
 
 # Additional dependencies for file processing
-Pillow==10.1.0
+Pillow
 
 # Development dependencies (optional)
 python-dotenv==1.0.0 
+
+bitsandbytes==0.46.0
+transformers==4.52.4
+safetensors==0.5.3
+dotenv

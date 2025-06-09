@@ -5,7 +5,8 @@ from werkzeug.utils import secure_filename
 import base64
 from src.ai_utils import get_report_summary, get_sentence_explanation, generate_chatbot_response, generate_report_from_image
 from src.utils import extract_text_from_pdf,convert_report_to_markdown
-
+from src import ai_utils
+import argparse
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
@@ -135,6 +136,7 @@ def chat_with_ai():
 
         response = generate_chatbot_response(message, document_text, image_data)
 
+
         return jsonify({
             'response': response,
             'context_used': bool(document_text) or bool(image_data),
@@ -162,16 +164,10 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    print("🚀 Starting Medical AI Demo Server...")
-    print("📋 This is a local development server")
-    print("🤖 Using mock AI responses (replace with real OpenAI API)")
-    print("-" * 50)
+    parser = argparse.ArgumentParser(description="Start Medical AI Demo Server")
+    parser.add_argument("--url", required=True, help="MLflow server URL")
+    parser.add_argument("--hf_token", required=True, help="HuggingFace API token")
 
+    args = parser.parse_args()
+    ai_utils.configure(args.url, args.hf_token)
     app.run(host='127.0.0.1', port=5000, debug=True)
-
-    print("-" * 50)
-    print("📖 Instructions:")
-    print("1. Open http://127.0.0.1:5000 in your browser")
-    print("2. Click 'Analyze Report with AI'")
-    print("3. Click on any sentence for explanations")
-    print("4. Modify the code to add your OpenAI API key for real AI")
