@@ -32,8 +32,8 @@ Run: ModelRegistration.ipynb
 
 This notebook will:
    - Download MEDGEMMA
-   - Register it to MLflow
-   - Prepare the model for deployment
+   - Register it to MLflow 
+   - Prepare the model for deployment - Get the URI from the MLFlow registration to run the application
 
 ### 3.Running the application
 ```bash
