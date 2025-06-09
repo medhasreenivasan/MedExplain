@@ -36,8 +36,9 @@ This notebook will:
    - Prepare the model for deployment
 
 ### 3.Running the application
-python app.py
-
+```bash
+python demo/app.py --url <url>/invocations --hf_token <huggingface_token>
+```
 ### 4. API Endpoints 
 
 | Endpoint                | Method | Description                                  |
